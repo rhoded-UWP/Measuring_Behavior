@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="An interactive practice activity for selecting the best dimension of behavior measurement.">
+  <title>Behavior Measurement Lab | Teaching 4030</title>
+  <style>
+    :root {
+      --ink: #17324d;
+      --ink-soft: #496276;
+      --paper: #f7f0df;
+      --paper-deep: #eadfc7;
+      --cream: #fffdf7;
+      --line: #c9bea7;
+      --coral: #d95747;
+      --coral-dark: #a93c31;
+      --teal: #167d77;
+      --teal-dark: #0c5f5b;
+      --gold: #f2b744;
+      --green: #287a51;
+      --shadow: 0 18px 45px rgba(31, 45, 55, .14);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 8% 5%, rgba(242, 183, 68, .2), transparent 24rem),
+        radial-gradient(circle at 92% 15%, rgba(22, 125, 119, .13), transparent 28rem),
+        var(--paper);
+      font-family: Georgia, 'Times New Roman', serif;
+      line-height: 1.55;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      opacity: .28;
+      pointer-events: none;
+      background-image: repeating-linear-gradient(0deg, transparent 0 31px, rgba(23, 50, 77, .08) 31px 32px);
+      mask-image: linear-gradient(to bottom, transparent 0, #000 14rem);
+    }
+
+    button, select { font: inherit; }
+
+    button:focus-visible, select:focus-visible, a:focus-visible {
+      outline: 3px solid var(--gold);
+      outline-offset: 3px;
+    }
+
+    .shell { width: min(1180px, calc(100% - 32px)); margin: 0 auto; }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 42px 0 54px;
+      color: #fffdf7;
+      background: var(--ink);
+      border-bottom: 8px solid var(--gold);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      width: 390px;
+      height: 390px;
+      right: -90px;
+      top: -235px;
+      border: 70px solid rgba(255,255,255,.06);
+      border-radius: 50%;
+    }
+
+    .course-line {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 0 0 22px;
+      color: #cfe4e2;
+      font-family: 'Trebuchet MS', Verdana, sans-serif;
+      font-size: .78rem;
+      font-weight: 800;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    .course-line::before { content: ""; width: 34px; height: 3px; background: var(--gold); }
+
+    .hero-grid { display: grid; grid-template-columns: 1.35fr .65fr; gap: 56px; align-items: end; }
+
+    h1 {
+      max-width: 820px;
+      margin: 0;
+      font-size: clamp(2.8rem, 7vw, 6.4rem);
+      line-height: .89;
+      letter-spacing: -.055em;
+      text-wrap: balance;
+    }
+
+    .hero-copy { max-width: 690px; margin: 24px 0 0; color: #dce8ee; font-size: 1.08rem; }
+
+    .field-note {
+      position: relative;
+      padding: 22px 22px 20px;
+      color: var(--ink);
+      background: var(--gold);
+      box-shadow: 9px 9px 0 rgba(0, 0, 0, .18);
+      transform: rotate(1.4deg);
+    }
+
+    .field-note::before {
+      content: "FIELD NOTE";
+      display: block;
+      margin-bottom: 8px;
+      font-family: 'Trebuchet MS', Verdana, sans-serif;
+      font-size: .72rem;
+      font-weight: 900;
+      letter-spacing: .14em;
+    }
+
+    .field-note p { margin: 0; font-size: 1.05rem; font-weight: 700; }
+
+    .sticky-wrap { position: sticky; top: 0; z-index: 20; background: rgba(247, 240, 223, .94); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+
+    .progress-panel { display: grid; grid-template-columns: auto 1fr auto; gap: 20px; align-items: center; min-height: 86px; }
+
+    .score {
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+      min-width: 120px;
+      font-family: 'Trebuchet MS', Verdana, sans-serif;
+      font-weight: 800;
+    }
+
+    .score strong { font-size: 2rem; line-height: 1; color: var(--teal-dark); }
+    .score span { color: var(--ink-soft); }
+
+    .progress-track { height: 13px; overflow: hidden; border: 1px solid #aea38e; border-radius: 999px; background: #ded4bf; }
+    .progress-bar { width: 0; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--teal), #36a08f); transition: width .45s cubic-bezier(.2,.8,.2,1); }
+
+    .reset-btn, .finish-btn {
+      border: 0;
+      border-radius: 999px;
+      cursor: pointer;
+      font-family: 'Trebuchet MS', Verdana, sans-serif;
+      font-weight: 800;
+    }
+
+    .reset-btn { padding: 10px 16px; color: var(--ink); background: transparent; border: 1px solid var(--line); }
+    .reset-btn:hover { background: var(--cream); }
+
+    main { padding: 48px 0 80px; }
+
+    .intro { display: grid; grid-template-columns: .72fr 1.28fr; gap: 50px; margin-bottom: 35px; align-items: start; }
+    .eyebrow { margin: 0 0 6px; color: var(--coral-dark); font-family: 'Trebuchet MS', Verdana, sans-serif; font-size: .76rem; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; }
+    h2 { margin: 0; font-size: clamp(2rem, 4vw, 3.35rem); line-height: 1; letter-spacing: -.04em; }
+    .instructions { margin: 7px 0 0; color: var(--ink-soft); font-size: 1.05rem; }
+
+    .legend { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 32px; padding: 0; list-style: none; }
+    .legend li { padding: 6px 11px; border: 1px solid var(--line); border-radius: 999px; background: rgba(255,253,247,.6); font-family: 'Trebuchet MS', Verdana, sans-serif; font-size: .78rem; font-weight: 800; }
+
+    .scenario-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+
+    .card {
+      position: relative;
+      display: grid;
+      grid-template-columns: 58px 1fr;
+      gap: 17px;
+      min-height: 238px;
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 253, 247, .92);
+      box-shadow: 0 7px 0 rgba(104, 91, 68, .08);
+      transition: border-color .25s, box-shadow .25s, transform .25s;
+      animation: rise .5s both;
+      animation-delay: calc(var(--i) * 35ms);
+    }
+
+    .card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+    .card.correct { border-color: #75ad90; box-shadow: inset 0 0 0 1px #75ad90, 0 7px 0 rgba(40, 122, 81, .09); }
+    .card.incorrect { border-color: #e19a91; }
+
+    .number {
+      display: grid;
+      place-items: center;
+      width: 52px;
+      height: 52px;
+      color: var(--cream);
+      border-radius: 50% 50% 48% 45%;
+      background: var(--ink);
+      font-family: 'Trebuchet MS', Verdana, sans-serif;
+      font-size: 1.12rem;
+      font-weight: 900;
+    }
+
+    .scenario { margin: 2px 0 18px; font-size: 1.12rem; font-weight: 700; line-height: 1.42; }
+
+    label { display: block; margin-bottom: 7px; color: var(--ink-soft); font-family: 'Trebuchet MS', Verdana, sans-serif; font-size: .76rem; font-weight: 900; letter-spacing: .07em; text-transform: uppercase; }
+
+    select {
+      width: 100%;
+      min-height: 48px;
+      padding: 10px 42px 10px 13px;
+      color: var(--ink);
+      border: 2px solid #9dacb7;
+      border-radius: 10px;
+      background: #fff;
+      cursor: pointer;
+    }
+
+    select:hover { border-color: var(--teal); }
+    select[disabled] { color: var(--green); border-color: #75ad90; background: #f2faf5; cursor: default; opacity: 1; }
+
+    .feedback { min-height: 50px; margin: 12px 0 0; padding: 0; border-radius: 9px; font-size: .92rem; }
+    .feedback:not(:empty) { padding: 10px 12px; }
+    .feedback.error { color: #702a24; background: #fbe7e3; border-left: 4px solid var(--coral); }
+    .feedback.success { color: #165b3a; background: #e6f5ec; border-left: 4px solid var(--green); }
+    .feedback strong { font-family: 'Trebuchet MS', Verdana, sans-serif; }
+
+    .completion {
+      display: none;
+      position: relative;
+      overflow: hidden;
+      margin-top: 42px;
+      padding: clamp(32px, 6vw, 68px);
+      color: #fff;
+      border-radius: 26px;
+      background: var(--teal-dark);
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+
+    .completion.show { display: block; animation: reveal .7s both; }
+    .completion::before, .completion::after { content: "✦"; position: absolute; color: var(--gold); font-size: 7rem; opacity: .3; }
+    .completion::before { left: 4%; top: -25px; transform: rotate(-12deg); }
+    .completion::after { right: 4%; bottom: -45px; transform: rotate(12deg); }
+    .completion-mark { display: grid; place-items: center; width: 76px; height: 76px; margin: 0 auto 17px; color: var(--teal-dark); border-radius: 50%; background: var(--gold); font-family: 'Trebuchet MS', Verdana, sans-serif; font-size: 2.5rem; font-weight: 900; }
+    .completion h2 { font-size: clamp(2.3rem, 5vw, 4.4rem); }
+    .completion p { max-width: 650px; margin: 18px auto 28px; color: #d6efec; font-size: 1.08rem; }
+    .finish-btn { padding: 13px 22px; color: var(--ink); background: var(--gold); }
+    .finish-btn:hover { background: #ffd474; }
+
+    footer { padding: 27px 0 36px; color: var(--ink-soft); border-top: 1px solid var(--line); font-family: 'Trebuchet MS', Verdana, sans-serif; font-size: .8rem; text-align: center; }
+
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+    @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes reveal { from { opacity: 0; transform: scale(.96) translateY(18px); } to { opacity: 1; transform: none; } }
+
+    @media (max-width: 820px) {
+      .hero-grid, .intro { grid-template-columns: 1fr; gap: 28px; }
+      .field-note { max-width: 430px; }
+      .scenario-list { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 560px) {
+      .shell { width: min(100% - 22px, 1180px); }
+      .hero { padding-top: 30px; }
+      .progress-panel { grid-template-columns: 1fr auto; gap: 10px 12px; padding: 10px 0; }
+      .progress-track { grid-row: 2; grid-column: 1 / -1; }
+      .card { grid-template-columns: 42px 1fr; gap: 12px; min-height: 0; padding: 18px 15px; }
+      .number { width: 40px; height: 40px; font-size: .95rem; }
+      main { padding-top: 34px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+
+    @media print {
+      .hero { padding: 20px 0; }
+      .sticky-wrap { position: static; }
+      .reset-btn { display: none; }
+      .scenario-list { grid-template-columns: 1fr 1fr; }
+      .card { break-inside: avoid; box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="shell">
+      <p class="course-line">Teaching 4030 · Positive Behavior Supports</p>
+      <div class="hero-grid">
+        <div>
+          <h1>Behavior<br>Measurement Lab</h1>
+          <p class="hero-copy">Read each observable scenario, then choose the measurement dimension that captures it best. Use the feedback like a field note: revise, learn, and reach 19 out of 19.</p>
+        </div>
+        <aside class="field-note" aria-label="Activity goal">
+          <p>Your goal is mastery—not a first-try grade. Every correction is part of the practice.</p>
+        </aside>
+      </div>
+    </div>
+  </header>
+
+  <div class="sticky-wrap">
+    <div class="shell progress-panel" aria-label="Activity progress">
+      <div class="score"><strong id="score">0</strong><span>/ 19 correct</span></div>
+      <div class="progress-track" role="progressbar" aria-label="Scenarios completed correctly" aria-valuemin="0" aria-valuemax="19" aria-valuenow="0">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+      <button class="reset-btn" id="resetButton" type="button">Start over</button>
+    </div>
+  </div>
+
+  <main class="shell">
+    <section class="intro" aria-labelledby="practice-heading">
+      <div>
+        <p class="eyebrow">Practice set · 19 observations</p>
+        <h2 id="practice-heading">Choose what to measure.</h2>
+      </div>
+      <p class="instructions">Select the single best answer for each scenario. An incorrect choice reveals the correct dimension and a brief reason; change your response and try again. Correct responses stay marked so you can see your progress.</p>
+    </section>
+
+    <ul class="legend" aria-label="Measurement categories">
+      <li>Frequency · how many times</li>
+      <li>Percent · how often out of opportunities</li>
+      <li>Latency · how long until it starts</li>
+      <li>Duration · how long it lasts</li>
+      <li>Intensity · how big or severe</li>
+    </ul>
+
+    <form id="activityForm" novalidate>
+      <div class="scenario-list" id="scenarioList"></div>
+    </form>
+
+    <section class="completion" id="completion" tabindex="-1" aria-labelledby="completion-title">
+      <div class="completion-mark" aria-hidden="true">✓</div>
+      <p class="eyebrow" style="color:#f2b744">Measurement mastery</p>
+      <h2 id="completion-title">19 out of 19.</h2>
+      <p>You matched every behavior to its best measurement dimension. You’re ready to explain the reasoning—and to notice when more than one dimension might be useful in a real observation.</p>
+      <button class="finish-btn" id="reviewButton" type="button">Review my answers</button>
+    </section>
+  </main>
+
+  <footer>
+    <div class="shell">Teaching 4030 · Positive Behavior Supports · Measurement practice</div>
+  </footer>
+
+  <div class="sr-only" id="liveRegion" aria-live="polite" aria-atomic="true"></div>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const categories = ['Frequency', 'Percent', 'Latency', 'Duration', 'Intensity'];
+      const scenarioBank = [
+        { behavior: 'A student calls out an answer without raising their hand.', answer: 'Frequency', why: 'Each call-out is a separate, countable occurrence.' },
+        { behavior: 'A student leaves their assigned seat without permission.', answer: 'Frequency', why: 'Each time the student leaves the seat has a clear, countable beginning.' },
+        { behavior: 'A student directs an inappropriate word toward a peer.', answer: 'Frequency', why: 'Each use of the word is a discrete event that can be counted.' },
+        { behavior: 'A student throws an object across the classroom.', answer: 'Frequency', why: 'Each throw is a distinct occurrence.' },
+        { behavior: 'A student asks to go to the bathroom during class.', answer: 'Frequency', why: 'Each request is a separate event that can be tallied.' },
+
+        { behavior: 'A student follows a teacher direction when a direction is given.', answer: 'Percent', why: 'Compare the number of times a student follows a teacher direction versus not following the direction.' },
+        { behavior: 'A student raises their hand before speaking during class response opportunities.', answer: 'Percent', why: 'Compare the number of times a student raises their hand before speaking with the number of times the student raises their hand and waits to be called on.' },
+        { behavior: 'A student uses an appropriate greeting after another person greets them.', answer: 'Percent', why: 'Compare appropriate greetings with the total greeting opportunities.' },
+
+        { behavior: 'After being told to begin independent work, a student starts working.', answer: 'Latency', why: 'Measure the time from the direction until work begins.' },
+        { behavior: 'After the bell rings, a student begins the classroom entry routine.', answer: 'Latency', why: 'Measure the time between the bell cue and the start of the routine.' },
+        { behavior: 'After being asked a question, a student begins responding.', answer: 'Latency', why: 'Measure the time from the question to the start of the response.' },
+        { behavior: 'After being directed to line up, a student gets out of their seat.', answer: 'Latency', why: 'Measure the delay between the direction and the first movement to comply.' },
+        { behavior: 'After a timer signals cleanup, a student begins putting materials away.', answer: 'Latency', why: 'Measure the time from the signal until cleanup starts.' },
+
+        { behavior: 'How long the student cries after receiving feedback.', answer: 'Duration', why: 'Measure how long the crying lasts from beginning to end.' },
+        { behavior: 'A student remains engaged with an independent reading assignment.', answer: 'Duration', why: 'Measure the total length of time the student stays engaged.' },
+        { behavior: 'How long the student engages in a tantrum during a transition.', answer: 'Duration', why: 'Measure how long the tantrum lasts once it begins.' },
+        { behavior: 'How long a student keeps their head down on the desk during instruction.', answer: 'Duration', why: 'Measure the length of time the head-down behavior continues.' },
+        { behavior: 'A student participates in cooperative play with a classmate at recess for how many minutes?', answer: 'Duration', why: 'Measure how long the cooperative play episode lasts.' },
+
+        { behavior: 'A student screams during a difficult assignment.', answer: 'Intensity', why: 'Rate the magnitude, such as the scream’s volume, using clear criteria.' }
+      ];
+
+      function shuffle(items) {
+        const copy = [...items];
+        for (let i = copy.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [copy[i], copy[j]] = [copy[j], copy[i]];
+        }
+        return copy;
+      }
+
+      function shuffledScenarios() {
+        let mixed = [...scenarioBank];
+        for (let attempt = 0; attempt < 500; attempt++) {
+          mixed = shuffle(scenarioBank);
+          const hasMatchingNeighbors = mixed.some((item, index) =>
+            index > 0 && item.answer === mixed[index - 1].answer
+          );
+          if (!hasMatchingNeighbors) return mixed;
+        }
+        return mixed;
+      }
+
+      let scenarios = shuffledScenarios();
+      const list = document.getElementById('scenarioList');
+      const scoreEl = document.getElementById('score');
+      const bar = document.getElementById('progressBar');
+      const progress = document.querySelector('[role="progressbar"]');
+      const completion = document.getElementById('completion');
+      const liveRegion = document.getElementById('liveRegion');
+      let correct = new Set();
+
+      function render() {
+        list.innerHTML = scenarios.map((item, index) => {
+          const options = categories.map(category => `<option value="${category}">${category}</option>`).join('');
+          return `
+            <article class="card" id="card-${index}" style="--i:${index}">
+              <div class="number" aria-hidden="true">${String(index + 1).padStart(2, '0')}</div>
+              <div>
+                <p class="scenario" id="scenario-${index}">${item.behavior}</p>
+                <label for="answer-${index}">Best measurement</label>
+                <select id="answer-${index}" data-index="${index}" aria-describedby="feedback-${index}">
+                  <option value="">Choose one…</option>
+                  ${options}
+                </select>
+                <p class="feedback" id="feedback-${index}" role="status"></p>
+              </div>
+            </article>`;
+        }).join('');
+      }
+
+      function updateProgress() {
+        const count = correct.size;
+        scoreEl.textContent = count;
+        bar.style.width = `${(count / scenarios.length) * 100}%`;
+        progress.setAttribute('aria-valuenow', count);
+        if (count === scenarios.length) {
+          completion.classList.add('show');
+          completion.focus({ preventScroll: true });
+          completion.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          liveRegion.textContent = 'Congratulations. All 19 scenarios are correct.';
+        }
+      }
+
+      function checkAnswer(select) {
+        const index = Number(select.dataset.index);
+        const item = scenarios[index];
+        const card = document.getElementById(`card-${index}`);
+        const feedback = document.getElementById(`feedback-${index}`);
+        const choice = select.value;
+
+        card.classList.remove('correct', 'incorrect');
+        feedback.className = 'feedback';
+        if (!choice) { feedback.textContent = ''; return; }
+
+        if (choice === item.answer) {
+          correct.add(index);
+          card.classList.add('correct');
+          feedback.classList.add('success');
+          feedback.innerHTML = `<strong>Correct — ${item.answer}.</strong> ${item.why}`;
+          select.disabled = true;
+          liveRegion.textContent = `Scenario ${index + 1} is correct. ${correct.size} of 19 complete.`;
+          updateProgress();
+        } else {
+          card.classList.add('incorrect');
+          feedback.classList.add('error');
+          feedback.innerHTML = `<strong>Try ${item.answer}.</strong> ${item.why}`;
+          liveRegion.textContent = `Scenario ${index + 1}: try ${item.answer}. ${item.why}`;
+        }
+      }
+
+      list.addEventListener('change', event => {
+        if (event.target.matches('select[data-index]')) checkAnswer(event.target);
+      });
+
+      document.getElementById('resetButton').addEventListener('click', () => {
+        if (correct.size > 0 && !window.confirm('Start over and clear all of your answers?')) return;
+        correct = new Set();
+        scenarios = shuffledScenarios();
+        completion.classList.remove('show');
+        render();
+        updateProgress();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        liveRegion.textContent = 'The activity has been reset.';
+      });
+
+      document.getElementById('reviewButton').addEventListener('click', () => {
+        document.getElementById('practice-heading').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+
+      render();
+      updateProgress();
+    })();
+  </script>
+</body>
+</html>
